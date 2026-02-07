@@ -69,8 +69,26 @@ class ReactAgentService:
         state["logs"].append(entry)
         getattr(logger, level.lower(), logger.info)(message)
 
+    MAX_RETRIES = 5
+
     def _react_node(self, state: ReactAgentState) -> dict:
         """Core ReAct reasoning node - checks contacts and decides routing."""
+        counter = state.get("counter", 0)
+        if counter >= self.MAX_RETRIES:
+            self._log("ERROR", f"react_node: Max retries ({self.MAX_RETRIES}) exceeded, giving up", state)
+            state["step_history"].append({
+                "node": "react_node",
+                "action": "max_retries_exceeded",
+                "attempts": counter,
+                "timestamp": datetime.now().isoformat(),
+            })
+            return {
+                "error": f"MAX_RETRIES_EXCEEDED after {counter} attempts",
+                "flag": "END",
+                "logs": state["logs"],
+                "step_history": state["step_history"],
+            }
+
         self._log("INFO", f"react_node: Checking contacts for '{state['user_name']}'", state)
 
         contacts_db = self._get_contacts_db()
@@ -78,10 +96,9 @@ class ReactAgentService:
         search_terms = user_name.lower().split()
         matches = [
             name for name in contacts_db
-            if any(
-                term in part
+            if all(
+                any(term == part for part in name.lower().split())
                 for term in search_terms
-                for part in name.lower().split()
             )
         ]
 
@@ -217,7 +234,7 @@ Maintain a formal tone. Provide a clear subject line and closing.
 
     def get_compiled_graph(self):
         if self._graph is None:
-            self._graph = self.build_graph().compile()
+            self._graph = self.build_graph().compile(recursion_limit=25)
         return self._graph
 
     def run(self, message: str, user_name: str = "") -> dict:
