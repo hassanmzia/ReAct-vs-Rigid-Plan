@@ -75,7 +75,15 @@ class ReactAgentService:
 
         contacts_db = self._get_contacts_db()
         user_name = state["user_name"] or ""
-        matches = [name for name in contacts_db if user_name.lower() in name.lower()]
+        search_terms = user_name.lower().split()
+        matches = [
+            name for name in contacts_db
+            if any(
+                term in part
+                for term in search_terms
+                for part in name.lower().split()
+            )
+        ]
 
         state["step_history"].append({
             "node": "react_node",
