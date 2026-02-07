@@ -87,7 +87,15 @@ class RigidAgentService:
         self._log("INFO", f"contacts_node: Looking up '{step_arg}'", state)
 
         contacts_db = self._get_contacts_db()
-        matches = [name for name in contacts_db if step_arg.lower() in name.lower()]
+        search_terms = step_arg.lower().split()
+        matches = [
+            name for name in contacts_db
+            if any(
+                term in part
+                for term in search_terms
+                for part in name.lower().split()
+            )
+        ]
 
         if len(matches) == 1:
             name = matches[0]
