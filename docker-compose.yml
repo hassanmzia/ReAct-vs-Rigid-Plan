@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   # ─────────────────────────────────────────────
-  # PostgreSQL Database (port 5433 externally)
+  # PostgreSQL Database (port 5473 externally)
   # ─────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-appuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_db_password}
     ports:
-      - "${POSTGRES_EXTERNAL_PORT:-5433}:5432"
+      - "${POSTGRES_EXTERNAL_PORT:-5473}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -25,7 +25,7 @@ services:
       - app_network
 
   # ─────────────────────────────────────────────
-  # Redis (port 6380 externally)
+  # Redis (port 6399 externally)
   # ─────────────────────────────────────────────
   redis:
     image: redis:7-alpine
@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
-      - "${REDIS_EXTERNAL_PORT:-6380}:6379"
+      - "${REDIS_EXTERNAL_PORT:-6399}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
