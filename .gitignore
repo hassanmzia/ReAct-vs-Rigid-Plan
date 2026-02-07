@@ -9,8 +9,7 @@ frontend/build/
 *.egg-info/
 dist/
 
-# Environment
-.env
+# Environment (keep .env tracked for deployment; use .env.local for secrets)
 .env.local
 .env.*.local
 
