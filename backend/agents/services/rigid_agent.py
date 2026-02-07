@@ -90,10 +90,9 @@ class RigidAgentService:
         search_terms = step_arg.lower().split()
         matches = [
             name for name in contacts_db
-            if any(
-                term in part
+            if all(
+                any(term == part for part in name.lower().split())
                 for term in search_terms
-                for part in name.lower().split()
             )
         ]
 
