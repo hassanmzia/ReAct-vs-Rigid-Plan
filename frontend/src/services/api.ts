@@ -49,13 +49,13 @@ export const agentApi = {
 
 export const graphApi = {
   getMermaid: (agentType: string) =>
-    api.get('/agents/graph/', { params: { agent_type: agentType, format: 'mermaid' } }),
+    api.get(`/agents/graphs/${agentType}/`, { params: { output_format: 'mermaid' } }),
 
   getGraphJson: (agentType: string) =>
-    api.get('/agents/graph/', { params: { agent_type: agentType, format: 'json' } }),
+    api.get(`/agents/graphs/${agentType}/`, { params: { output_format: 'json' } }),
 
   getAllGraphs: () =>
-    api.get('/agents/graphs/', { params: { format: 'mermaid' } }),
+    api.get('/agents/graphs/', { params: { output_format: 'mermaid' } }),
 };
 
 // ─── Contacts ─────────────────────────────────────────

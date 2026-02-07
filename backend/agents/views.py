@@ -1,6 +1,6 @@
 import logging
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Contact, AgentSession, AgentStep, QueryHistory, AgentComparison
@@ -12,7 +12,6 @@ from .serializers import (
     CompareAgentsRequestSerializer,
     AgentComparisonSerializer,
     RecursiveQARequestSerializer,
-    GraphVisualizationSerializer,
 )
 from .tasks import run_agent_task, run_comparison_task, run_recursive_qa_task
 from .services.graph_visualizer import GraphVisualizer
@@ -174,29 +173,28 @@ class AgentComparisonViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AgentComparisonSerializer
 
 
-@api_view(["GET"])
-def graph_visualization(request):
-    """Get graph visualization for an agent type."""
-    agent_type = request.query_params.get("agent_type", "react")
-    fmt = request.query_params.get("format", "mermaid")
+class GraphViewSet(viewsets.ViewSet):
+    """Visualize agent graph definitions as Mermaid diagrams or JSON."""
 
-    try:
+    def list(self, request):
+        """Get all agent graph definitions."""
+        fmt = request.query_params.get("output_format", "mermaid")
         if fmt == "mermaid":
-            data = GraphVisualizer.get_mermaid(agent_type)
-            return Response({"agent_type": agent_type, "format": "mermaid", "diagram": data})
-        else:
-            data = GraphVisualizer.get_graph_json(agent_type)
-            return Response({"agent_type": agent_type, "format": "json", "graph": data})
-    except ValueError as e:
-        return Response({"error": str(e)}, status=400)
+            return Response(GraphVisualizer.get_all_mermaid())
+        return Response({
+            t: GraphVisualizer.get_graph_json(t)
+            for t in ["react", "rigid", "multi", "recursive"]
+        })
 
-
-@api_view(["GET"])
-def all_graphs(request):
-    """Get all agent graph definitions."""
-    fmt = request.query_params.get("format", "mermaid")
-    if fmt == "mermaid":
-        return Response(GraphVisualizer.get_all_mermaid())
-    return Response({
-        t: GraphVisualizer.get_graph_json(t) for t in ["react", "rigid", "multi", "recursive"]
-    })
+    def retrieve(self, request, pk=None):
+        """Get graph visualization for a specific agent type."""
+        fmt = request.query_params.get("output_format", "mermaid")
+        try:
+            if fmt == "mermaid":
+                data = GraphVisualizer.get_mermaid(pk)
+                return Response({"agent_type": pk, "format": "mermaid", "diagram": data})
+            else:
+                data = GraphVisualizer.get_graph_json(pk)
+                return Response({"agent_type": pk, "format": "json", "graph": data})
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
