@@ -234,7 +234,7 @@ Maintain a formal tone. Provide a clear subject line and closing.
 
     def get_compiled_graph(self):
         if self._graph is None:
-            self._graph = self.build_graph().compile(recursion_limit=25)
+            self._graph = self.build_graph().compile()
         return self._graph
 
     def run(self, message: str, user_name: str = "") -> dict:
@@ -254,7 +254,7 @@ Maintain a formal tone. Provide a clear subject line and closing.
             "step_history": [],
         }
 
-        output = graph.invoke(initial_state)
+        output = graph.invoke(initial_state, {"recursion_limit": 25})
         elapsed_ms = int((time.time() - start) * 1000)
 
         return {
