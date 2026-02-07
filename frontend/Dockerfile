@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -9,6 +9,8 @@ ARG REACT_APP_SITE_URL=http://172.168.1.95:3081
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV REACT_APP_WS_URL=$REACT_APP_WS_URL
 ENV REACT_APP_SITE_URL=$REACT_APP_SITE_URL
+ENV CI=false
+ENV DISABLE_ESLINT_PLUGIN=true
 
 COPY package.json ./
 RUN npm install --legacy-peer-deps
